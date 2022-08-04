@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <title>The GO Playground</title>
+</head>
+
+<body>
+    <div>
+        <h4>The GO Playground</h4>
+        <button onclick="Run()">Run</button>
+        <button onclick="ShareCode()">Share code</button>
+        <input hidden type="text" value="link" size="40" id="link">
+    </div>
+    
+    <div>
+        <textarea id="code_in" cols="100" rows="30"></textarea>
+    </div>
+
+    <div>
+        <textarea id="code_out" cols="100" rows="10"></textarea>
+    </div>
+</body>
+
+<script>
+    function Run() {
+        var ws = new WebSocket("ws://localhost:3000/play");
+
+        ws.onopen = function() {
+            var myTextArea = document.getElementById("code_out");
+            myTextArea.value = "";
+            var copyCode = $('#code_in').val();
+            ws.send(copyCode);
+        };
+
+        ws.onmessage = function (evt) {
+            var myTextArea = document.getElementById("code_out");
+            myTextArea.value = myTextArea.value + "\n" + evt.data;
+        };
+
+        ws.onclose = function() {
+            var myTextArea = document.getElementById("code_out");
+            myTextArea.value = myTextArea.value + "\n" + "\n" + "Program exited.";
+        };
+    }
+
+    function ShareCode() {
+        var ws = new WebSocket("ws://localhost:3000/share");
+
+        ws.onopen = function() {
+            var myTextArea = document.getElementById("code_out");
+            myTextArea.value = "";
+            var copyCode = $('#code_in').val();
+            ws.send(copyCode);
+        };
+
+        ws.onmessage = function (evt) {
+            var myLink = document.getElementById("link");
+            $('#link').show();
+            myLink.value = "http://localhost:3000/p/" + evt.data;
+        };
+    }
+</script>
+
+</html>
