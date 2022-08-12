@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <title>The GO Playground</title>
+</head>
+
+<body>
+    <div>
+        <h4>The GO Playground</h4>
+        <button class="btn btn-primary" onclick="Run()">Run</button>
+        <button class="btn btn-primary" onclick="ShareCode()">Share code</button>
+        <input hidden type="text" id="link" value="link" size="40">
+    </div>
+    
+    <div>
+        <textarea id="code_in" cols="100" rows="30"></textarea>
+    </div>
+
+    <div>
+        <textarea id="code_out" cols="100" rows="10"></textarea>
+    </div>
+</body>
+
+<script>
+    var port = ":8080"
+
+    function Run() {
+        var ws = new WebSocket("ws://localhost" + port + "/run");
+        var cnt = 0
+
+        ws.onopen = function() {
+            cnt = 0
+            var myTextArea = $('#code_out')[0];
+            var copyCode = $('#code_in').val();
+            ws.send(copyCode);
+            myTextArea.value = "";
+        };
+
+        ws.onmessage = function (evt) {
+            var myTextArea = $('#code_out')[0];
+            if (cnt==0) {
+                myTextArea.value = myTextArea.value + evt.data;
+                cnt++
+                return
+            }
+
+            myTextArea.value = myTextArea.value + "\n" + evt.data;
+        };
+
+        ws.onclose = function() {
+            var myTextArea = $('#code_out')[0];
+            myTextArea.value = myTextArea.value + "\n" + "\n" + "Program exited.";
+        };
+    }
+
+    function ShareCode() {
+        var ws = new WebSocket("ws://localhost" + port + "/share");
+
+        ws.onopen = function() {
+            var myTextArea = $("#code_out")[0];
+            myTextArea.value = "";
+            var copyCode = $("#code_in").val();
+            ws.send(copyCode);
+        };
+
+        ws.onmessage = function (evt) {
+            var myLink = $("#link")[0];
+            $("#link").show();
+            myLink.value = "http://localhost" + port + "/p/" + evt.data;
+        };
+    }
+
+    window.onload = function () {
+        var path = document.location.pathname;
+        if (path.includes("/p/")) {
+            fetch("http://localhost" + port + "/pp/" + path.split("/")[2])
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                $("#code_in").val(data)
+            });
+        }
+    }
+
+    var codeEditor = document.getElementById("code_in");
+    codeEditor.addEventListener("keydown", (e) => {
+        let { keyCode } = e;
+        let { value, selectionStart, selectionEnd } = codeEditor;
+        if (keyCode === 9) {
+            e.preventDefault();
+            codeEditor.value = value.slice(0, selectionStart) + '\t' + value.slice(selectionEnd);
+            codeEditor.setSelectionRange(selectionStart+2, selectionStart+2)
+        }
+    });
+
+</script>
+<style>
+    #code_in {
+        width: 100%;
+        background-color: rgb(255, 249, 180);
+    }
+
+    #code_out {
+        width: 100%;
+    }
+</style>
+</html>

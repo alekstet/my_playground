@@ -1,0 +1,4 @@
+port:            :8080
+binaries_folder: go_binary_files
+files_folder:    go_files
+html_name:       frontend/index.html
