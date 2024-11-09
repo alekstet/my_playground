@@ -10,13 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func genLink() (string, error) {
-	link, err := uuid.NewUUID()
-	if err != nil {
-		return "", err
-	}
-
-	return link.String(), nil
+func genLink() string {
+	return uuid.NewString()
 }
 
 func removeFile(filename string) {
@@ -36,10 +31,7 @@ func createFile(filename string) (string, error) {
 }
 
 func PrepareFile(data []byte, cnf *config.PlayConfig) (string, error) {
-	link, err := genLink()
-	if err != nil {
-		return "", err
-	}
+	link := genLink()
 
 	filename, err := createFile(link)
 	if err != nil {

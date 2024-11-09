@@ -1,1 +1,4 @@
 bin
+dist/
+.vscode
+github_token.txt

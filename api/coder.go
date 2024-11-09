@@ -22,7 +22,7 @@ func (s Store) getCode(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	w.Write([]byte(resp))
 }
 
-func (s Store) pipe(pipe io.ReadCloser, conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
+func (s Store) pipe(pipe io.ReadCloser, conn *websocket.Conn, w http.ResponseWriter) {
 	buf := bufio.NewReader(pipe)
 
 	for {
@@ -59,7 +59,7 @@ func (s Store) run(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 
-	s.pipe(pipe, conn, w, r)
+	s.pipe(pipe, conn, w)
 }
 
 func (s Store) share(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
